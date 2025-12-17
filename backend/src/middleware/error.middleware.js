@@ -21,10 +21,11 @@ const errorHandler = (err, req, res, next) => {
   }
 
   // Default server error
+  // Default server error
   res.status(500).json({
-    error: process.env.NODE_ENV === 'development' 
-      ? err.message 
-      : 'Internal server error'
+    // FORCE SHOW ERROR MESSAGE FOR DEBUGGING VERCEL DEPLOYMENT
+    error: err.message || 'Internal server error',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
 };
 
