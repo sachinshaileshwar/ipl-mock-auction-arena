@@ -114,7 +114,15 @@ const TeamDashboard = () => {
   }
 
   if (!team) {
-    return <div>Team not found</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-900">
+        <Card className="bg-black/40 border-red-500/30 p-8">
+          <h2 className="text-xl text-red-500 font-bold mb-2">Failed to load Team Data</h2>
+          <p className="text-white/60 mb-4">API Response missing or failed.</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </Card>
+      </div>
+    );
   }
 
   const retainedPlayers = players.filter(p => p.is_retained);
