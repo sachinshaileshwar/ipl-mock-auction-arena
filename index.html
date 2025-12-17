@@ -3,6 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      window.onerror = function(msg, url, line, col, error) {
+        var div = document.createElement("div");
+        div.style.cssText = "position:fixed; top:0; left:0; width:100%; z-index:9999; background:black; color:red; padding:20px; font-family:monospace; white-space:pre-wrap; border-bottom: 2px solid white;";
+        div.innerHTML = "Global Error: " + msg + "\n" + url + ":" + line + ":" + col + "\n" + (error ? error.stack : "");
+        document.body.appendChild(div);
+      };
+      window.onunhandledrejection = function(e) {
+        var div = document.createElement("div");
+        div.style.cssText = "position:fixed; top:50%; left:0; width:100%; z-index:9999; background:black; color:yellow; padding:20px; font-family:monospace; white-space:pre-wrap; border-top: 2px solid white;";
+        div.innerHTML = "Unhandled Promise Rejection: " + e.reason;
+        document.body.appendChild(div);
+      };
+    </script>
     <title>IPL Mock Auction Arena - Live Cricket Bidding Platform</title>
     <meta name="description" content="Experience the thrill of IPL player auctions with real-time bidding, team management, and live updates. Build your dream cricket squad!">
     <meta name="author" content="Lovable" />
