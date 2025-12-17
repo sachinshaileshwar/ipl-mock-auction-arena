@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +23,7 @@ interface Team {
 }
 
 const TeamsSetup = () => {
-  const [teams, setTeams] = useState<Team[]>([]);
+
   const [newTeam, setNewTeam] = useState({
     name: "",
     short_code: "",
@@ -40,18 +41,17 @@ const TeamsSetup = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchTeams();
-  }, []);
-
-  const fetchTeams = async () => {
-    try {
+  /* REMOVED: useEffect and fetchTeams
+     Replaced with React Query for Caching/Instant Load */
+  const { data: teams = [], isLoading: loadingTeams, refetch: refetchTeams } = useQuery({
+    queryKey: ["teams"],
+    queryFn: async () => {
       const { data } = await api.get("/api/teams");
-      setTeams(data.teams || []);
-    } catch (error) {
-      console.error("Error fetching teams:", error);
-    }
-  };
+      return data.teams || [];
+    },
+    // Keep data fresh for 5 minutes (Instant tab switching!)
+    staleTime: 1000 * 60 * 5,
+  });
 
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +90,8 @@ const TeamsSetup = () => {
         max_overseas: 8,
       });
 
-      fetchTeams();
+      // Refresh list
+      refetchTeams();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -98,8 +99,8 @@ const TeamsSetup = () => {
         variant: "destructive",
       });
     } finally {
-      // Always refresh the list, because the team might have been created even if user creation failed
-      fetchTeams();
+      // Refresh list even on partial error (idempotency support)
+      refetchTeams();
       setLoading(false);
     }
   };
@@ -115,7 +116,7 @@ const TeamsSetup = () => {
         description: "Team has been removed",
       });
 
-      fetchTeams();
+      refetchTeams();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -149,7 +150,7 @@ const TeamsSetup = () => {
       });
 
       setLogoFile(null);
-      fetchTeams();
+      refetchTeams();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -199,7 +200,7 @@ const TeamsSetup = () => {
       setEditingTeam(null);
       setEditCredentials({ username: "", password: "" });
       setLogoFile(null);
-      fetchTeams();
+      refetchTeams();
     } catch (error: any) {
       toast({
         title: "Error",

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,38 +34,26 @@ const RetentionSetup = () => {
   const [playerSearch, setPlayerSearch] = useState("");
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
+  /* REMOVED: useEffect and fetchData
+     Replaced with React Query for Caching/Instant Load */
+  const { data: cachedData, isLoading: initialLoading, refetch: refetchData } = useQuery({
+    queryKey: ["retention-data"],
+    queryFn: async () => {
       const [teamsRes, playersRes, retainedRes] = await Promise.all([
         api.get("/api/teams"),
         api.get("/api/players?status=not_started"),
         api.get("/api/players?status=retained"),
-        // Note: The original code fetched 'team_players' directly.
-        // /api/players?status=retained returns Players.
-        // But we need 'team_players' data (price, etc.) for the list.
-        // Actually /api/players returns Player objects. 
-        // sold_price is on Player object (if updated properly).
-        // Let's check player.routes.js GET /.
-        // It selects *. So sold_price, sold_to_team_id are available.
-        // We can map this to the expected structure or simplify the UI to use Player object fields.
       ]);
 
-      setTeams(teamsRes.data.teams || []);
-      setPlayers(playersRes.data.players || []);
+      const teamsData = teamsRes.data.teams || [];
+      const playersData = playersRes.data.players || [];
 
-      // Retained players list needs to link with team name.
-      // We can map retained players and lookup team name from teams list.
+      // Process retentions
       const retainedPlayers = retainedRes.data.players || [];
-      const teamsMap = new Map((teamsRes.data.teams || []).map((t: any) => [t.id, t.name]));
+      const teamsMap = new Map((teamsData as Team[]).map((t: Team) => [t.id, t.name]));
 
       const formattedRetentions = retainedPlayers.map((p: any) => ({
-        id: p.id, // Using player ID or constructed ID
-        // The UI uses retention.id for deletion. In my new endpoint I use team_id + player_id.
-        // So I can pass player_id as retentionId or just pass player_id directly.
+        id: p.id,
         player_id: p.id,
         team_id: p.sold_to_team_id,
         price: p.sold_price,
@@ -72,11 +61,23 @@ const RetentionSetup = () => {
         teams: { name: teamsMap.get(p.sold_to_team_id) || 'Unknown' }
       }));
 
-      setRetentions(formattedRetentions);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+      return {
+        teams: teamsData,
+        players: playersData,
+        retentions: formattedRetentions
+      };
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutes cache
+  });
+
+  // Sync React Query data to local state for easier filtering/UI usage
+  useEffect(() => {
+    if (cachedData) {
+      setTeams(cachedData.teams);
+      setPlayers(cachedData.players);
+      setRetentions(cachedData.retentions);
     }
-  };
+  }, [cachedData]);
 
   const filteredPlayers = useMemo(() => {
     if (!playerSearch.trim()) return players;
@@ -108,7 +109,7 @@ const RetentionSetup = () => {
       setSelectedPlayer("");
       setRetentionPrice("");
       setPlayerSearch("");
-      fetchData();
+      refetchData();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -134,7 +135,7 @@ const RetentionSetup = () => {
         title: "Retention Removed",
       });
 
-      fetchData();
+      refetchData();
     } catch (error: any) {
       toast({
         title: "Error",
