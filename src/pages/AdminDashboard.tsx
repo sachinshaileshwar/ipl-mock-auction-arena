@@ -17,7 +17,7 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050b14] bg-gradient-stadium cricket-pattern">
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
         <CricketLoader size={120} message="Setting up the auction arena..." />
       </div>
     );
