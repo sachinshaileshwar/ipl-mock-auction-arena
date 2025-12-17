@@ -51,9 +51,11 @@ const Login = () => {
       toast({
         title: "Login Failed",
         description:
-          error?.response?.data?.error ||
-          error?.error ||
-          (error.message === 'Network Error' ? "Cannot connect to server. Ensure backend is running." : "Invalid username or password"),
+          (typeof error?.response?.data?.error === 'string' ? error.response.data.error : "") ||
+          (typeof error?.error === 'string' ? error.error : "") ||
+          error?.error?.message ||
+          error?.message ||
+          "Invalid username or password",
         variant: "destructive",
       });
     } finally {
