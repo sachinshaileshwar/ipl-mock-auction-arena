@@ -98,6 +98,8 @@ const TeamsSetup = () => {
         variant: "destructive",
       });
     } finally {
+      // Always refresh the list, because the team might have been created even if user creation failed
+      fetchTeams();
       setLoading(false);
     }
   };
