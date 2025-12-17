@@ -54,7 +54,8 @@ router.post('/login', [
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Login failed' });
+    // Expose detailed error for Vercel debugging
+    res.status(500).json({ error: error.message || 'Login failed' });
   }
 });
 
