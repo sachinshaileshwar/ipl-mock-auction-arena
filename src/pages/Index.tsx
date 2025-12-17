@@ -30,7 +30,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-stadium cricket-pattern p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black p-4 relative overflow-hidden text-white">
       {/* Decorative cricket elements */}
       <div className="absolute top-10 left-10 opacity-20">
         <BatSwingAnimation size={120} />
