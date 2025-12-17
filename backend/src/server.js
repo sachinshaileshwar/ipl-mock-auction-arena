@@ -60,6 +60,16 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Debug endpoint to check Supabase config status
+app.get('/api/debug-config', (req, res) => {
+  res.json({
+    supabaseUrlConfigured: !!process.env.SUPABASE_URL,
+    supabaseAnonKeyConfigured: !!process.env.SUPABASE_ANON_KEY,
+    supabaseServiceKeyConfigured: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    nodeEnv: process.env.NODE_ENV
+  });
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/teams', teamRoutes);
