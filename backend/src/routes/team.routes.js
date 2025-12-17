@@ -75,24 +75,25 @@ router.post('/', authenticate, authorizeAdmin, [
     const { name, short_code, purse_start, logo_url, max_squad_size, min_squad_size, max_overseas } = req.body;
 
     // Use supabaseAdmin to bypass RLS for creation
+    // Use upsert to handle "Retry" scenarios where team already exists (idempotent)
     const { data: team, error } = await supabaseAdmin
       .from('teams')
-      .insert({
+      .upsert({
         name,
         short_code,
         purse_start,
-        purse_remaining: purse_start,
+        purse_remaining: purse_start, // Note: This resets purse on re-creation, which is expected for "Setup"
         logo_url,
         max_squad_size: max_squad_size || 25,
         min_squad_size: min_squad_size || 11,
         max_overseas: max_overseas || 8
-      })
+      }, { onConflict: 'short_code' })
       .select()
       .single();
 
     if (error) throw error;
 
-    res.status(201).json({ message: 'Team created successfully', team });
+    res.status(201).json({ message: 'Team created/updated successfully', team });
   } catch (error) {
     console.error('Create team error:', error);
     res.status(500).json({ error: error.message || 'Failed to create team' });
