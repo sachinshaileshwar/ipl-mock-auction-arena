@@ -181,38 +181,63 @@ router.post('/create-team-user', authenticate, async (req, res) => {
       });
     }
 
-    // Check if we are updating an existing user
-    if (req.body.update_existing) {
-      // 1. Find user by username/email first
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('username', username)
-        .single();
+    // Construct the email that would be used
+    const email = `${username}@auction.local`;
 
-      if (profileError || !profiles) {
-        return res.status(404).json({ error: 'User not found to update' });
-      }
+    // 1. Check if user exists by email (using admin API)
+    // We can list users with a filter
+    const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
 
-      // 2. Update password
+    // Note: listUsers() doesn't support server-side filtering by email in all versions, 
+    // but for this scale it's fine to filter in memory or use RPC if available.
+    // Ideally we would use separate identify logic, but this is robust enough.
+    const existingUser = users.find(u => u.email === email);
+
+    if (existingUser) {
+      console.log(`User ${username} already exists. Updating credentials...`);
+
+      // 2. Update existing user
       const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-        profiles.id,
-        { password: password }
+        existingUser.id,
+        {
+          password: password,
+          email_confirm: true,
+          user_metadata: {
+            username,
+            role: 'team',
+            team_id
+          }
+        }
       );
 
       if (updateError) {
-        return res.status(400).json({ error: updateError.message });
+        return res.status(400).json({ error: 'Failed to update existing user: ' + updateError.message });
+      }
+
+      // Also ensure the profile is linked correctly (in case it was adrift)
+      // Check if profile exists for this user
+      const { data: existingProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .eq('id', existingUser.id)
+        .single();
+
+      if (existingProfile) {
+        await supabaseAdmin
+          .from('profiles')
+          .update({ team_id, role: 'team', username })
+          .eq('id', existingUser.id);
       }
 
       return res.status(200).json({
-        message: 'Team credentials updated successfully',
+        message: 'Team user updated successfully',
         user: updatedUser.user
       });
     }
 
-    // Create user with admin privileges
+    // 3. Create new user if not exists
     const { data, error } = await supabaseAdmin.auth.admin.createUser({
-      email: `${username}@auction.local`,
+      email,
       password,
       email_confirm: true,
       user_metadata: {
@@ -223,45 +248,6 @@ router.post('/create-team-user', authenticate, async (req, res) => {
     });
 
     if (error) {
-      // If user already exists, try to update them
-      if (error.message.includes('already registered')) {
-        // Find the profile to get the user ID
-        const { data: existingProfile } = await supabaseAdmin
-          .from('profiles')
-          .select('id')
-          .eq('username', username)
-          .single();
-
-        if (existingProfile) {
-          // Update the existing user's password and metadata
-          const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-            existingProfile.id,
-            {
-              password: password,
-              user_metadata: {
-                username,
-                role: 'team',
-                team_id
-              }
-            }
-          );
-
-          // Update the profile's team_id as well
-          await supabaseAdmin
-            .from('profiles')
-            .update({ team_id, role: 'team' })
-            .eq('id', existingProfile.id);
-
-          if (updateError) {
-            return res.status(400).json({ error: 'Failed to update existing user: ' + updateError.message });
-          }
-
-          return res.status(200).json({
-            message: 'Team user updated successfully',
-            user: updatedUser.user
-          });
-        }
-      }
       return res.status(400).json({ error: error.message });
     }
 
@@ -271,7 +257,7 @@ router.post('/create-team-user', authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error('Create team user error:', error);
-    res.status(500).json({ error: 'Failed to create team user' });
+    res.status(500).json({ error: error.message || 'Failed to create team user' });
   }
 });
 
