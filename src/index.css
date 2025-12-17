@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Cricket-themed Design System */
+
+@layer base {
+  :root {
+    /* Cricket Stadium Green & Pitch Brown palette */
+    --background: 140 15% 97%;
+    --foreground: 150 20% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 150 20% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 20% 10%;
+
+    /* Cricket Blue - like team jersey */
+    --primary: 210 85% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Cricket Ball Red */
+    --secondary: 0 75% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 140 10% 94%;
+    --muted-foreground: 150 10% 40%;
+
+    /* Stadium Green */
+    --accent: 145 65% 35%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Warning Orange - like umpire signals */
+    --warning: 35 95% 55%;
+    --warning-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 140 15% 88%;
+    --input: 140 15% 88%;
+    --ring: 210 85% 45%;
+
+    --radius: 0.75rem;
+    
+    /* Cricket-themed gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 85% 45%), hsl(210 85% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(0 75% 50%), hsl(15 80% 55%));
+    --gradient-accent: linear-gradient(135deg, hsl(145 65% 35%), hsl(145 65% 45%));
+    --gradient-stadium: linear-gradient(180deg, hsl(210 85% 45%) 0%, hsl(145 65% 35%) 100%);
+    --gradient-pitch: linear-gradient(180deg, hsl(45 80% 75%) 0%, hsl(30 60% 55%) 100%);
+    
+    /* Dynamic shadows */
+    --shadow-sm: 0 2px 12px hsl(210 85% 45% / 0.1);
+    --shadow-md: 0 4px 20px hsl(210 85% 45% / 0.15);
+    --shadow-lg: 0 10px 40px hsl(210 85% 45% / 0.2);
+    --shadow-glow: 0 0 30px hsl(210 85% 45% / 0.3);
+    
+    /* Smooth transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --sidebar-background: 140 15% 97%;
+    --sidebar-foreground: 150 10% 30%;
+    --sidebar-primary: 210 85% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 145 65% 35%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 140 15% 88%;
+    --sidebar-ring: 210 85% 45%;
+  }
+
+  .dark {
+    --background: 150 15% 8%;
+    --foreground: 140 15% 97%;
+
+    --card: 150 15% 11%;
+    --card-foreground: 140 15% 97%;
+
+    --popover: 150 15% 11%;
+    --popover-foreground: 140 15% 97%;
+
+    --primary: 210 85% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 75% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 150 10% 18%;
+    --muted-foreground: 140 10% 60%;
+
+    --accent: 145 65% 42%;
+    --accent-foreground: 0 0% 100%;
+
+    --warning: 35 95% 60%;
+    --warning-foreground: 0 0% 10%;
+
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 150 15% 22%;
+    --input: 150 15% 22%;
+    --ring: 210 85% 55%;
+    
+    --sidebar-background: 150 15% 10%;
+    --sidebar-foreground: 140 15% 90%;
+    --sidebar-primary: 210 85% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 145 65% 42%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 150 15% 22%;
+    --sidebar-ring: 210 85% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Cricket-themed utilities */
+@layer utilities {
+  .cricket-pattern {
+    background-image: 
+      radial-gradient(circle at 20% 80%, hsl(145 65% 35% / 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, hsl(210 85% 45% / 0.05) 0%, transparent 50%);
+  }
+
+  .stadium-glow {
+    box-shadow: 
+      0 0 30px hsl(145 65% 35% / 0.2),
+      0 0 60px hsl(210 85% 45% / 0.1);
+  }
+
+  .ball-shadow {
+    box-shadow: 
+      inset 0 -3px 6px hsl(0 75% 40% / 0.3),
+      0 4px 12px hsl(0 75% 50% / 0.4);
+  }
+
+  .pitch-texture {
+    background: 
+      linear-gradient(90deg, transparent 49%, hsl(45 30% 70% / 0.3) 50%, transparent 51%),
+      linear-gradient(180deg, hsl(45 80% 75%) 0%, hsl(30 60% 55%) 100%);
+  }
+
+  .animate-bounce-slow {
+    animation: bounce 2s infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px hsl(210 85% 45% / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 40px hsl(210 85% 45% / 0.5);
+    }
+  }
+
+  .text-gradient-cricket {
+    background: linear-gradient(135deg, hsl(210 85% 45%), hsl(145 65% 35%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
