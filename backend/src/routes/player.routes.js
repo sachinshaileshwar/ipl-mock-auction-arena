@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
   try {
     const { category, status, is_overseas, set_no, search } = req.query;
 
-    let query = supabase
+    let query = supabaseAdmin
       .from('players')
       .select('*, teams:sold_to_team_id(name, short_code, logo_url)')
       .order('set_no', { ascending: true })
@@ -41,7 +41,7 @@ router.get('/', async (req, res) => {
  */
 router.get('/available', async (req, res) => {
   try {
-    const { data: players, error } = await supabase
+    const { data: players, error } = await supabaseAdmin
       .from('players')
       .select('*')
       .eq('status', 'not_started')
@@ -73,7 +73,7 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { data: player, error } = await supabase
+    const { data: player, error } = await supabaseAdmin
       .from('players')
       .select('*, teams:sold_to_team_id(*)')
       .eq('id', id)

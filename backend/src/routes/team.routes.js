@@ -10,7 +10,7 @@ const { authenticate, authorizeAdmin } = require('../middleware/auth.middleware'
  */
 router.get('/', async (req, res) => {
   try {
-    const { data: teams, error } = await supabase
+    const { data: teams, error } = await supabaseAdmin
       .from('teams')
       .select('*')
       .order('name');
@@ -32,7 +32,7 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { data: team, error } = await supabase
+    const { data: team, error } = await supabaseAdmin
       .from('teams')
       .select(`
         *,
@@ -157,7 +157,7 @@ router.get('/:id/user', authenticate, authorizeAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { data: profile, error } = await supabase
+    const { data: profile, error } = await supabaseAdmin
       .from('profiles')
       .select('username')
       .eq('team_id', id)
@@ -180,7 +180,7 @@ router.get('/:id/players', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { data: players, error } = await supabase
+    const { data: players, error } = await supabaseAdmin
       .from('team_players')
       .select(`
         *,
