@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticate, authorizeAdmin } = require('../middleware/auth.middleware');
 
 /**
@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
     res.json({ teams });
   } catch (error) {
     console.error('Get teams error:', error);
-    res.status(500).json({ error: 'Failed to fetch teams' });
+    res.status(500).json({ error: error.message || 'Failed to fetch teams' });
   }
 });
 
@@ -53,7 +53,7 @@ router.get('/:id', async (req, res) => {
     res.json({ team });
   } catch (error) {
     console.error('Get team error:', error);
-    res.status(500).json({ error: 'Failed to fetch team' });
+    res.status(500).json({ error: error.message || 'Failed to fetch team' });
   }
 });
 
@@ -74,7 +74,8 @@ router.post('/', authenticate, authorizeAdmin, [
 
     const { name, short_code, purse_start, logo_url, max_squad_size, min_squad_size, max_overseas } = req.body;
 
-    const { data: team, error } = await supabase
+    // Use supabaseAdmin to bypass RLS for creation
+    const { data: team, error } = await supabaseAdmin
       .from('teams')
       .insert({
         name,
@@ -94,7 +95,7 @@ router.post('/', authenticate, authorizeAdmin, [
     res.status(201).json({ message: 'Team created successfully', team });
   } catch (error) {
     console.error('Create team error:', error);
-    res.status(500).json({ error: 'Failed to create team' });
+    res.status(500).json({ error: error.message || 'Failed to create team' });
   }
 });
 
@@ -107,7 +108,8 @@ router.put('/:id', authenticate, authorizeAdmin, async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
-    const { data: team, error } = await supabase
+    // Use supabaseAdmin to bypass RLS
+    const { data: team, error } = await supabaseAdmin
       .from('teams')
       .update(updates)
       .eq('id', id)
@@ -119,7 +121,7 @@ router.put('/:id', authenticate, authorizeAdmin, async (req, res) => {
     res.json({ message: 'Team updated successfully', team });
   } catch (error) {
     console.error('Update team error:', error);
-    res.status(500).json({ error: 'Failed to update team' });
+    res.status(500).json({ error: error.message || 'Failed to update team' });
   }
 });
 
@@ -131,7 +133,8 @@ router.delete('/:id', authenticate, authorizeAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { error } = await supabase
+    // Use supabaseAdmin to bypass RLS
+    const { error } = await supabaseAdmin
       .from('teams')
       .delete()
       .eq('id', id);
@@ -141,7 +144,7 @@ router.delete('/:id', authenticate, authorizeAdmin, async (req, res) => {
     res.json({ message: 'Team deleted successfully' });
   } catch (error) {
     console.error('Delete team error:', error);
-    res.status(500).json({ error: 'Failed to delete team' });
+    res.status(500).json({ error: error.message || 'Failed to delete team' });
   }
 });
 
