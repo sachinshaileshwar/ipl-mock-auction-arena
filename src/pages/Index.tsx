@@ -38,50 +38,50 @@ const Index = () => {
       <div className="absolute bottom-10 right-10 opacity-20">
         <StumpsAnimation size={100} />
       </div>
-      
-      <Card className="w-full max-w-2xl shadow-2xl border-2 border-primary/20 backdrop-blur-sm bg-card/95 animate-bounce-in">
+
+      <Card className="w-full max-w-2xl shadow-2xl border border-white/10 backdrop-blur-xl bg-black/30 animate-bounce-in">
         <CardHeader className="text-center space-y-4 pb-8">
           <div className="mx-auto">
             <TrophyAnimation size={100} />
           </div>
-          <CardTitle className="text-4xl md:text-5xl font-display font-bold text-gradient-cricket">
+          <CardTitle className="text-4xl md:text-5xl font-display font-bold text-gradient-cricket drop-shadow-lg">
             IPL MOCK AUCTION
           </CardTitle>
-          <CardDescription className="text-lg text-muted-foreground">
+          <CardDescription className="text-lg text-white/70">
             Step into the dugout! Build your dream XI through live bidding wars
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 transition-all hover:scale-105 hover:shadow-md">
-              <Users className="w-8 h-8 mx-auto mb-2 text-primary" />
-              <p className="font-semibold">Squad Builder</p>
-              <p className="text-sm text-muted-foreground">Manage your XI & purse</p>
+            <div className="text-center p-4 bg-black/40 rounded-lg border border-primary/20 transition-all hover:scale-105 hover:shadow-lg hover:bg-primary/10 group">
+              <Users className="w-8 h-8 mx-auto mb-2 text-primary group-hover:scale-110 transition-transform" />
+              <p className="font-semibold text-white">Squad Builder</p>
+              <p className="text-sm text-white/60">Manage your XI & purse</p>
             </div>
-            <div className="text-center p-4 bg-gradient-to-br from-secondary/10 to-secondary/5 rounded-lg border border-secondary/20 transition-all hover:scale-105 hover:shadow-md">
-              <Gavel className="w-8 h-8 mx-auto mb-2 text-secondary" />
-              <p className="font-semibold">Live Paddle</p>
-              <p className="text-sm text-muted-foreground">Real-time bidding action</p>
+            <div className="text-center p-4 bg-black/40 rounded-lg border border-secondary/20 transition-all hover:scale-105 hover:shadow-lg hover:bg-secondary/10 group">
+              <Gavel className="w-8 h-8 mx-auto mb-2 text-secondary group-hover:scale-110 transition-transform" />
+              <p className="font-semibold text-white">Live Paddle</p>
+              <p className="text-sm text-white/60">Real-time bidding action</p>
             </div>
-            <div className="text-center p-4 bg-gradient-to-br from-accent/10 to-accent/5 rounded-lg border border-accent/20 transition-all hover:scale-105 hover:shadow-md">
-              <div className="w-8 h-8 mx-auto mb-2 rounded-full bg-secondary flex items-center justify-center">
+            <div className="text-center p-4 bg-black/40 rounded-lg border border-accent/20 transition-all hover:scale-105 hover:shadow-lg hover:bg-accent/10 group">
+              <div className="w-8 h-8 mx-auto mb-2 rounded-full bg-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
                 <span className="text-secondary-foreground text-xs font-bold">🏏</span>
               </div>
-              <p className="font-semibold">Match Ready</p>
-              <p className="text-sm text-muted-foreground">Instant sync across devices</p>
+              <p className="font-semibold text-white">Match Ready</p>
+              <p className="text-sm text-white/60">Instant sync across devices</p>
             </div>
           </div>
-          
-          <Button 
-            onClick={() => navigate("/login")} 
-            size="lg" 
-            className="w-full bg-gradient-primary hover:opacity-90 text-lg py-6 font-display tracking-wide shadow-glow transition-all hover:scale-[1.02]"
+
+          <Button
+            onClick={() => navigate("/login")}
+            size="lg"
+            className="w-full bg-gradient-primary hover:opacity-90 text-lg py-6 font-display tracking-wide shadow-glow transition-all hover:scale-[1.02] border border-white/10"
           >
             ENTER THE AUCTION ARENA
           </Button>
-          
-          <p className="text-center text-sm text-muted-foreground">
-            🏟️ Join the bidding war • Build your championship squad
+
+          <p className="text-center text-sm text-white/40 flex items-center justify-center gap-2">
+            <span>🏟️</span> Join the bidding war • Build your championship squad
           </p>
         </CardContent>
       </Card>
