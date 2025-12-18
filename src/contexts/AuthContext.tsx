@@ -23,10 +23,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // We want the PROFILE because it has the 'role', which the app needs for routing.
       // The backend returns { user, profile }.
       setUser(res.data.profile);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Session check failed", err);
-      localStorage.removeItem("auth_token");
-      setUser(null);
+      // Only logout if it's an auth error (401/403)
+      // For network errors or 500s, keep the token to retry later
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem("auth_token");
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }

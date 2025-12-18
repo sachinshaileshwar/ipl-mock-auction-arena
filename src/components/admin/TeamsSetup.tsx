@@ -49,8 +49,9 @@ const TeamsSetup = () => {
       const { data } = await api.get("/api/teams");
       return data.teams || [];
     },
-    // Keep data fresh for 5 minutes (Instant tab switching!)
-    staleTime: 1000 * 60 * 5,
+    // Always fetch fresh data to ensure updates from other tabs are seen
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 
   const handleCreateTeam = async (e: React.FormEvent) => {

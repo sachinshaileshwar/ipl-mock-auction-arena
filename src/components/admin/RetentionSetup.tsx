@@ -67,7 +67,8 @@ const RetentionSetup = () => {
         retentions: formattedRetentions
       };
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes cache
+    staleTime: 0, // Always fetch fresh data to avoid sync issues with other tabs
+    refetchOnWindowFocus: true,
   });
 
   // Sync React Query data to local state for easier filtering/UI usage
