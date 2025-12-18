@@ -35,7 +35,8 @@ const TeamsSetup = () => {
   });
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null); // For Edit
+  const [createLogoFile, setCreateLogoFile] = useState<File | null>(null); // For Create
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [editCredentials, setEditCredentials] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -90,6 +91,12 @@ const TeamsSetup = () => {
         max_squad_size: 25,
         max_overseas: 8,
       });
+
+      // Upload logo if selected
+      if (createLogoFile) {
+        await uploadLogo(teamData.team.id, createLogoFile);
+        setCreateLogoFile(null);
+      }
 
       // Refresh list
       refetchTeams();
@@ -223,6 +230,35 @@ const TeamsSetup = () => {
         <CardContent>
           <form onSubmit={handleCreateTeam} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Logo Upload for Create */}
+              <div className="col-span-full space-y-2">
+                <Label className="text-white/80">Team Logo</Label>
+                <div className="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
+                  <Avatar className="w-20 h-20 ring-2 ring-white/10">
+                    {createLogoFile ? (
+                      <AvatarImage src={URL.createObjectURL(createLogoFile)} alt="Preview" />
+                    ) : (
+                      <AvatarFallback className="text-2xl bg-accent text-white font-bold">{newTeam.short_code || "NEW"}</AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className="flex-1">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          setCreateLogoFile(e.target.files[0]);
+                        }
+                      }}
+                      className="cursor-pointer bg-black/20 border-white/10 text-white file:bg-white/10 file:text-white file:border-0 hover:file:bg-white/20"
+                    />
+                    <p className="text-xs text-white/40 mt-2">
+                      PNG, JPG up to 2MB
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-white/80">Team Name</Label>
                 <Input
