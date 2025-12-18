@@ -63,7 +63,7 @@ const TeamDashboard = () => {
   useEffect(() => {
     if (profile?.team_id) {
       fetchTeamData();
-      const interval = setInterval(fetchTeamData, 1000); // 1s polling for sync
+      const interval = setInterval(fetchTeamData, 3000); // 3s polling for performance
       return () => clearInterval(interval);
     }
   }, [profile]);

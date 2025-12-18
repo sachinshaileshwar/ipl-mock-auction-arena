@@ -39,7 +39,7 @@ const PublicAuctionView = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 1000); // Polling faster (1s) for sync
+    const interval = setInterval(fetchData, 3000); // Polling every 3s to reduce load
     return () => clearInterval(interval);
   }, []); // eslint-disable-next-line react-hooks/exhaustive-deps
 

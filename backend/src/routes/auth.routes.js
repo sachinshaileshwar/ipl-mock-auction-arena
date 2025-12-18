@@ -185,12 +185,14 @@ router.post('/create-team-user', authenticate, async (req, res) => {
     const email = `${username}@auction.local`;
 
     // 1. Check if user exists by email (using admin API)
-    // We can list users with a filter
-    const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    // Increase limit to avoid pagination issues
+    const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
 
-    // Note: listUsers() doesn't support server-side filtering by email in all versions, 
-    // but for this scale it's fine to filter in memory or use RPC if available.
-    // Ideally we would use separate identify logic, but this is robust enough.
+    if (listError) {
+      console.error('List users error:', listError);
+      return res.status(500).json({ error: 'Failed to check existing users' });
+    }
+
     const existingUser = users.find(u => u.email === email);
 
     if (existingUser) {
@@ -214,19 +216,21 @@ router.post('/create-team-user', authenticate, async (req, res) => {
         return res.status(400).json({ error: 'Failed to update existing user: ' + updateError.message });
       }
 
-      // Also ensure the profile is linked correctly (in case it was adrift)
-      // Check if profile exists for this user
-      const { data: existingProfile } = await supabaseAdmin
+      // Explicitly update profile to ensure sync
+      const { error: profileError } = await supabaseAdmin
         .from('profiles')
-        .select('id')
-        .eq('id', existingUser.id)
-        .single();
+        .upsert({
+          id: existingUser.id,
+          username,
+          email,
+          role: 'team',
+          team_id,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
 
-      if (existingProfile) {
-        await supabaseAdmin
-          .from('profiles')
-          .update({ team_id, role: 'team', username })
-          .eq('id', existingUser.id);
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        // Continue anyway, as auth update succeeded
       }
 
       return res.status(200).json({
@@ -249,6 +253,23 @@ router.post('/create-team-user', authenticate, async (req, res) => {
 
     if (error) {
       return res.status(400).json({ error: error.message });
+    }
+
+    // Explicitly create profile to ensure it exists (backup for trigger failure)
+    if (data.user) {
+      const { error: profileCreateError } = await supabaseAdmin
+        .from('profiles')
+        .upsert({
+          id: data.user.id,
+          username,
+          email,
+          role: 'team',
+          team_id
+        }, { onConflict: 'id' });
+
+      if (profileCreateError) {
+        console.error('Manual profile creation error:', profileCreateError);
+      }
     }
 
     res.status(201).json({
