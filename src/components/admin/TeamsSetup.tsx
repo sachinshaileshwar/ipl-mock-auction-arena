@@ -382,23 +382,23 @@ const TeamsSetup = () => {
 
       {/* Edit Team Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-black/90 backdrop-blur-xl border-white/10 text-white">
           <DialogHeader>
-            <DialogTitle>Edit Team</DialogTitle>
+            <DialogTitle className="text-white">Edit Team</DialogTitle>
           </DialogHeader>
           {editingTeam && (
             <form onSubmit={handleEditTeam} className="space-y-4">
               {/* Logo Upload */}
               <div className="space-y-2">
-                <Label>Team Logo</Label>
-                <div className="flex items-center gap-4">
-                  <Avatar className="w-20 h-20">
+                <Label className="text-white/80">Team Logo</Label>
+                <div className="flex items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/10">
+                  <Avatar className="w-20 h-20 ring-2 ring-white/10">
                     {logoFile ? (
                       <AvatarImage src={URL.createObjectURL(logoFile)} alt="Preview" />
                     ) : editingTeam.logo_url ? (
                       <AvatarImage src={editingTeam.logo_url} alt={editingTeam.name} />
                     ) : (
-                      <AvatarFallback className="text-2xl">{editingTeam.short_code}</AvatarFallback>
+                      <AvatarFallback className="text-2xl bg-accent text-white font-bold">{editingTeam.short_code}</AvatarFallback>
                     )}
                   </Avatar>
                   <div className="flex-1">
@@ -410,9 +410,9 @@ const TeamsSetup = () => {
                           setLogoFile(e.target.files[0]);
                         }
                       }}
-                      className="cursor-pointer"
+                      className="cursor-pointer bg-black/20 border-white/10 text-white file:bg-white/10 file:text-white file:border-0 hover:file:bg-white/20"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-white/40 mt-2">
                       PNG, JPG up to 2MB
                     </p>
                   </div>
@@ -421,81 +421,88 @@ const TeamsSetup = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-name">Team Name</Label>
+                  <Label htmlFor="edit-name" className="text-white/80">Team Name</Label>
                   <Input
                     id="edit-name"
                     value={editingTeam.name}
                     onChange={(e) => setEditingTeam({ ...editingTeam, name: e.target.value })}
                     required
+                    className="bg-white/5 border-white/10 text-white focus:border-accent"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-short_code">Short Code</Label>
+                  <Label htmlFor="edit-short_code" className="text-white/80">Short Code</Label>
                   <Input
                     id="edit-short_code"
                     value={editingTeam.short_code}
                     onChange={(e) => setEditingTeam({ ...editingTeam, short_code: e.target.value.toUpperCase() })}
                     maxLength={5}
                     required
+                    className="bg-white/5 border-white/10 text-white focus:border-accent"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-purse">Starting Purse (Cr)</Label>
+                  <Label htmlFor="edit-purse" className="text-white/80">Starting Purse (Cr)</Label>
                   <Input
                     id="edit-purse"
                     type="number"
                     value={editingTeam.purse_start}
                     onChange={(e) => setEditingTeam({ ...editingTeam, purse_start: Number(e.target.value) })}
                     required
+                    className="bg-white/5 border-white/10 text-white focus:border-accent"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-squad_size">Max Squad Size</Label>
+                  <Label htmlFor="edit-squad_size" className="text-white/80">Max Squad Size</Label>
                   <Input
                     id="edit-squad_size"
                     type="number"
                     value={editingTeam.max_squad_size}
                     onChange={(e) => setEditingTeam({ ...editingTeam, max_squad_size: Number(e.target.value) })}
                     required
+                    className="bg-white/5 border-white/10 text-white focus:border-accent"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-overseas">Max Overseas</Label>
+                  <Label htmlFor="edit-overseas" className="text-white/80">Max Overseas</Label>
                   <Input
                     id="edit-overseas"
                     type="number"
                     value={editingTeam.max_overseas}
                     onChange={(e) => setEditingTeam({ ...editingTeam, max_overseas: Number(e.target.value) })}
                     required
+                    className="bg-white/5 border-white/10 text-white focus:border-accent"
                   />
                 </div>
               </div>
 
               {/* Credentials Section */}
-              <div className="border-t pt-4 mt-4">
-                <h3 className="font-semibold mb-4">Update Team Credentials (Optional)</h3>
+              <div className="border-t border-white/10 pt-4 mt-4">
+                <h3 className="font-semibold mb-4 text-white">Update Team Credentials (Optional)</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-username">Username</Label>
+                    <Label htmlFor="edit-username" className="text-white/80">Username</Label>
                     <Input
                       id="edit-username"
                       value={editCredentials.username}
                       onChange={(e) => setEditCredentials({ ...editCredentials, username: e.target.value })}
                       placeholder="Leave empty to keep current"
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-accent"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-password">New Password</Label>
+                    <Label htmlFor="edit-password" className="text-white/80">New Password</Label>
                     <Input
                       id="edit-password"
                       type="password"
                       value={editCredentials.password}
                       onChange={(e) => setEditCredentials({ ...editCredentials, password: e.target.value })}
                       placeholder="Leave empty to keep current"
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-accent"
                     />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-xs text-white/40 mt-2">
                   Only fill these fields if you want to update the team's login credentials
                 </p>
               </div>
@@ -510,10 +517,11 @@ const TeamsSetup = () => {
                     setEditCredentials({ username: "", password: "" });
                     setLogoFile(null);
                   }}
+                  className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white"
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={loading || uploadingLogo}>
+                <Button type="submit" disabled={loading || uploadingLogo} className="bg-accent hover:bg-accent/80 text-white font-bold">
                   {loading || uploadingLogo ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
