@@ -8,6 +8,7 @@ import CricketLoader from "@/components/CricketLoader";
 import { TrophyAnimation, BatSwingAnimation } from "@/components/CricketAnimations";
 import { RecentlySoldCarousel } from "@/components/RecentlySoldCarousel";
 import { TrendingUp, Users, DollarSign, Activity, Gavel } from "lucide-react";
+import { AuctionNotificationOverlay } from "@/components/AuctionNotificationOverlay";
 
 // Micro-Component for Stats Tile
 const StatTile = ({ icon: Icon, label, value, subtext, colorClass }: any) => (
@@ -115,27 +116,22 @@ const PublicAuctionView = () => {
   const totalPurseRemaining = teams.reduce((sum, t) => sum + (t.purse_remaining || 0), 0);
 
   // Animation Overlay
-  if (showSoldAnimation) {
+  if (showSoldAnimation && liveRound) {
     return (
-      <div className="fixed inset-0 z-50 bg-green-900/90 flex items-center justify-center animate-in fade-in duration-300">
-        <div className="text-center space-y-6 animate-scale-in">
-          <div className="flex justify-center"><TrophyAnimation size={200} /></div>
-          <h1 className="text-7xl md:text-9xl font-display font-black text-white animate-pulse drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">SOLD!</h1>
-          <p className="text-3xl md:text-4xl text-green-200 font-bold uppercase tracking-widest">To {liveRound?.teams?.name || "The Franchise"}</p>
-        </div>
-      </div>
+      <AuctionNotificationOverlay
+        type="sold"
+        teamName={liveRound?.teams?.name || "The Franchise"}
+        isVisible={showSoldAnimation}
+      />
     );
   }
 
   if (showUnsoldAnimation) {
     return (
-      <div className="fixed inset-0 z-50 bg-red-900/90 flex items-center justify-center animate-in fade-in duration-300">
-        <div className="text-center space-y-6 animate-scale-in">
-          <div className="flex justify-center"><BatSwingAnimation size={200} /></div>
-          <h1 className="text-7xl md:text-9xl font-display font-black text-white animate-pulse drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">UNSOLD</h1>
-          <p className="text-3xl md:text-4xl text-red-200 font-bold uppercase tracking-widest">Better Luck Next Time</p>
-        </div>
-      </div>
+      <AuctionNotificationOverlay
+        type="unsold"
+        isVisible={showUnsoldAnimation}
+      />
     );
   }
 

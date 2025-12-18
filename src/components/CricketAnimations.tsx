@@ -1,7 +1,7 @@
 import Lottie from "lottie-react";
 
 // Stumps animation data
-const stumpsAnimation = {
+export const stumpsAnimation = {
   v: "5.7.4",
   fr: 30,
   ip: 0,
@@ -57,7 +57,7 @@ const stumpsAnimation = {
 };
 
 // Bat swing animation
-const batSwingAnimation = {
+export const batSwingAnimation = {
   v: "5.7.4",
   fr: 30,
   ip: 0,
@@ -118,7 +118,7 @@ const batSwingAnimation = {
 };
 
 // Trophy celebration animation
-const trophyAnimation = {
+export const trophyAnimation = {
   v: "5.7.4",
   fr: 30,
   ip: 0,
@@ -250,7 +250,7 @@ const trophyAnimation = {
 };
 
 // Boundary celebration animation (ball hitting for six)
-const boundaryAnimation = {
+export const boundaryAnimation = {
   v: "5.7.4",
   fr: 30,
   ip: 0,
@@ -420,7 +420,7 @@ const boundaryAnimation = {
 };
 
 // Wicket falling animation (for unsold players)
-const wicketFallingAnimation = {
+export const wicketFallingAnimation = {
   v: "5.7.4",
   fr: 30,
   ip: 0,
@@ -638,7 +638,7 @@ const wicketFallingAnimation = {
 };
 
 // Cricket stadium animation
-const stadiumAnimation = {
+export const stadiumAnimation = {
   v: "5.7.4",
   fr: 30,
   ip: 0,
@@ -735,7 +735,7 @@ const stadiumAnimation = {
 };
 
 // Gavel animation for auction
-const gavelAnimation = {
+export const gavelAnimation = {
   v: "5.7.4",
   fr: 30,
   ip: 0,
