@@ -67,7 +67,10 @@ const TeamDashboard = () => {
   }, [profile]);
 
   const fetchTeamData = async () => {
-    if (!profile?.team_id) return;
+    if (!profile?.team_id) {
+      setLoadingData(false);
+      return;
+    }
 
     try {
       const [teamRes, availableRes, historyRes] = await Promise.all([
@@ -140,10 +143,29 @@ const TeamDashboard = () => {
   if (!team) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-900">
-        <Card className="bg-black/40 border-red-500/30 p-8">
-          <h2 className="text-xl text-red-500 font-bold mb-2">Failed to load Team Data</h2>
-          <p className="text-white/60 mb-4">API Response missing or failed.</p>
-          <Button onClick={() => window.location.reload()}>Retry</Button>
+        <Card className="bg-black/40 border-red-500/30 p-8 max-w-md w-full">
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto bg-red-500/10 p-4 rounded-full border border-red-500/20 mb-4">
+              <Trophy className="w-12 h-12 text-red-500" />
+            </div>
+            <CardTitle className="text-2xl text-white font-display">No Team Assigned</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-white/60">
+              Your account is active, but it's not linked to any IPL Franchise.
+              <br /><br />
+              This happens if your team was deleted by the Admin.
+            </p>
+            <div className="flex flex-col gap-3">
+              <Button onClick={() => window.location.reload()} variant="outline" className="border-white/10 text-white bg-white/5 hover:bg-white/10 hover:text-white">
+                Retry Connection
+              </Button>
+              <Button onClick={signOut} variant="destructive" className="bg-red-600 hover:bg-red-700">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out & Re-Login
+              </Button>
+            </div>
+          </CardContent>
         </Card>
       </div>
     );
