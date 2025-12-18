@@ -8,9 +8,13 @@ const { authenticate, authorizeAdmin } = require('../middleware/auth.middleware'
  * GET /api/auction/current
  * Get current live auction round
  */
+/**
+ * GET /api/auction/current
+ * Get current live auction round
+ */
 router.get('/current', async (req, res) => {
   try {
-    const { data: round, error } = await supabase
+    const { data: round, error } = await supabaseAdmin
       .from('auction_rounds')
       .select(`
         *,
@@ -37,7 +41,7 @@ router.get('/history', async (req, res) => {
   try {
     const { limit = 10 } = req.query;
 
-    const { data: rounds, error } = await supabase
+    const { data: rounds, error } = await supabaseAdmin
       .from('auction_rounds')
       .select(`
         *,
@@ -65,7 +69,7 @@ router.get('/recently-sold', async (req, res) => {
   try {
     const { limit = 5 } = req.query;
 
-    const { data: players, error } = await supabase
+    const { data: players, error } = await supabaseAdmin
       .from('players')
       .select('*, teams:sold_to_team_id(*)')
       .eq('status', 'sold')
@@ -88,14 +92,14 @@ router.get('/recently-sold', async (req, res) => {
 router.get('/stats', async (req, res) => {
   try {
     // 1. Team Spending & Players Count
-    const { data: teamsData, error: teamsError } = await supabase
+    const { data: teamsData, error: teamsError } = await supabaseAdmin
       .from('teams')
       .select('id, name, purse_start, purse_remaining');
 
     if (teamsError) throw teamsError;
 
     // Fetch team players to calculate spending manually if needed, or infer from purse
-    const { data: soldPlayers, error: playersError } = await supabase
+    const { data: soldPlayers, error: playersError } = await supabaseAdmin
       .from('players')
       .select('*') // or just needed fields like sold_price, category, sold_to_team_id
       .eq('status', 'sold');
@@ -103,7 +107,7 @@ router.get('/stats', async (req, res) => {
     if (playersError) throw playersError;
 
     // Also get retained players as they count towards spending/squad
-    const { data: retainedPlayers, error: retainedError } = await supabase
+    const { data: retainedPlayers, error: retainedError } = await supabaseAdmin
       .from('players')
       .select('*')
       .eq('status', 'retained');
