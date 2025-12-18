@@ -27,41 +27,39 @@ const StatTile = ({ icon: Icon, label, value, subtext, colorClass }: any) => (
 );
 
 const PublicAuctionView = () => {
-  const [liveRound, setLiveRound] = useState<any>(null);
-  const [currentPlayer, setCurrentPlayer] = useState<any>(null);
-  const [teams, setTeams] = useState<any[]>([]);
-  const [stats, setStats] = useState({ totalSpent: 0, highestBid: 0, soldCount: 0 });
-  const [loading, setLoading] = useState(true);
+  const [showSoldAnimation, setShowSoldAnimation] = useState(false);
+  const [showUnsoldAnimation, setShowUnsoldAnimation] = useState(false);
+  const [lastCompletedRoundId, setLastCompletedRoundId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 3000); // Poll every 3 seconds
+    const interval = setInterval(fetchData, 1000); // Polling faster (1s) for sync
     return () => clearInterval(interval);
-  }, []);
+  }, []); // eslint-disable-next-line react-hooks/exhaustive-deps
 
   const fetchData = async () => {
     try {
-      const [teamsRes, roundRes, soldRes] = await Promise.all([
+      const [teamsRes, roundRes, soldRes, historyRes] = await Promise.all([
         api.get("/api/teams"),
         api.get("/api/auction/current"),
-        api.get("/api/auction/recently-sold")
+        api.get("/api/auction/recently-sold"),
+        api.get("/api/auction/history?limit=1")
       ]);
 
       if (teamsRes.data.teams) {
         setTeams(teamsRes.data.teams);
-        // Calculate used purse (Original - Remaining) across all teams
-        // Assuming original purse is known or we just sum remaining for now.
-        // Better metric: Sum of Sold Players from soldRes
       }
 
       if (soldRes.data.players) {
         const soldPlayers = soldRes.data.players || [];
-        const totalSpent = soldPlayers.reduce((sum: number, p: any) => sum + Number(p.sold_price || 0), 0);
-        const maxBid = Math.max(...soldPlayers.map((p: any) => Number(p.sold_price || 0)), 0);
+        // Filter only actually sold players for stats
+        const actuallySold = soldPlayers.filter((p: any) => p.status === 'sold');
+        const totalSpent = actuallySold.reduce((sum: number, p: any) => sum + Number(p.sold_price || 0), 0);
+        const maxBid = Math.max(...actuallySold.map((p: any) => Number(p.sold_price || 0)), 0);
         setStats({
           totalSpent,
           highestBid: maxBid,
-          soldCount: soldPlayers.length
+          soldCount: actuallySold.length
         });
       }
 
@@ -73,6 +71,26 @@ const PublicAuctionView = () => {
         setLiveRound(null);
         setCurrentPlayer(null);
       }
+
+      // Check for new completed round to trigger animation
+      const latestHistory = historyRes.data.rounds?.[0];
+      if (latestHistory && latestHistory.id !== lastCompletedRoundId) {
+        // Avoid triggering on first load if it's old
+        const isRecent = new Date(latestHistory.updated_at).getTime() > Date.now() - 10000; // Only if within last 10s
+
+        if (lastCompletedRoundId !== null && isRecent) {
+          const playerStatus = latestHistory.players?.status;
+          if (playerStatus === 'sold') {
+            setShowSoldAnimation(true);
+            setTimeout(() => setShowSoldAnimation(false), 3000);
+          } else if (playerStatus === 'unsold') {
+            setShowUnsoldAnimation(true);
+            setTimeout(() => setShowUnsoldAnimation(false), 3000);
+          }
+        }
+        setLastCompletedRoundId(latestHistory.id);
+      }
+
     } catch (error) {
       console.error("Error fetching auction data:", error);
     } finally {
@@ -90,6 +108,31 @@ const PublicAuctionView = () => {
 
   // Calculate some derived stats
   const totalPurseRemaining = teams.reduce((sum, t) => sum + (t.purse_remaining || 0), 0);
+
+  // Animation Overlay
+  if (showSoldAnimation) {
+    return (
+      <div className="fixed inset-0 z-50 bg-green-900/90 flex items-center justify-center animate-in fade-in duration-300">
+        <div className="text-center space-y-6 animate-scale-in">
+          <div className="flex justify-center"><TrophyAnimation size={200} /></div>
+          <h1 className="text-7xl md:text-9xl font-display font-black text-white animate-pulse drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">SOLD!</h1>
+          <p className="text-3xl md:text-4xl text-green-200 font-bold uppercase tracking-widest">To {liveRound?.teams?.name || "The Franchise"}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showUnsoldAnimation) {
+    return (
+      <div className="fixed inset-0 z-50 bg-red-900/90 flex items-center justify-center animate-in fade-in duration-300">
+        <div className="text-center space-y-6 animate-scale-in">
+          <div className="flex justify-center"><BatSwingAnimation size={200} /></div>
+          <h1 className="text-7xl md:text-9xl font-display font-black text-white animate-pulse drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">UNSOLD</h1>
+          <p className="text-3xl md:text-4xl text-red-200 font-bold uppercase tracking-widest">Better Luck Next Time</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen bg-[#050b14] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#1a2c4e] via-[#050b14] to-black text-white flex flex-col p-4 md:p-6 overflow-hidden font-sans selection:bg-accent selection:text-accent-foreground">

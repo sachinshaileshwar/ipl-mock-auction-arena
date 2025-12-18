@@ -72,7 +72,7 @@ router.get('/recently-sold', async (req, res) => {
     const { data: players, error } = await supabaseAdmin
       .from('players')
       .select('*, teams:sold_to_team_id(*)')
-      .eq('status', 'sold')
+      .in('status', ['sold', 'unsold'])
       .order('updated_at', { ascending: false })
       .limit(parseInt(limit));
 
