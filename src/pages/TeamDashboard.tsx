@@ -48,15 +48,16 @@ interface Player {
 
 const TeamDashboard = () => {
   const { profile, signOut, loading } = useAuth();
-  const [team, setTeam] = useState<Team | null>(null);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [availablePlayers, setAvailablePlayers] = useState<AvailablePlayer[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
+  /* Animation States */
+  const [showSoldAnimation, setShowSoldAnimation] = useState(false);
+  const [showUnsoldAnimation, setShowUnsoldAnimation] = useState(false);
+  const [lastCompletedRoundId, setLastCompletedRoundId] = useState<string | null>(null);
+  const [liveRoundAnimationData, setLiveRoundAnimationData] = useState<any>(null);
 
   useEffect(() => {
     if (profile?.team_id) {
       fetchTeamData();
-      const interval = setInterval(fetchTeamData, 5000);
+      const interval = setInterval(fetchTeamData, 1000); // 1s polling for sync
       return () => clearInterval(interval);
     }
   }, [profile]);
@@ -65,15 +66,14 @@ const TeamDashboard = () => {
     if (!profile?.team_id) return;
 
     try {
-      const [teamRes, availableRes] = await Promise.all([
+      const [teamRes, availableRes, historyRes] = await Promise.all([
         api.get(`/api/teams/${profile.team_id}`),
-        api.get("/api/players?status=not_started")
+        api.get("/api/players?status=not_started"),
+        api.get("/api/auction/history?limit=1")
       ]);
 
       const teamData = teamRes.data.team;
       if (teamData) {
-        // Remove team_players from team object to avoid clutter if needed, 
-        // but keeping it is fine.
         setTeam(teamData);
 
         if (teamData.team_players) {
@@ -93,6 +93,26 @@ const TeamDashboard = () => {
 
       if (availableRes.data.players) {
         setAvailablePlayers(availableRes.data.players);
+      }
+
+      /* Animation Logic */
+      const latestHistory = historyRes.data.rounds?.[0];
+      if (latestHistory && latestHistory.id !== lastCompletedRoundId) {
+        const isRecent = new Date(latestHistory.updated_at).getTime() > Date.now() - 10000;
+
+        if (lastCompletedRoundId !== null && isRecent) {
+          const playerStatus = latestHistory.players?.status;
+          setLiveRoundAnimationData(latestHistory);
+
+          if (playerStatus === 'sold') {
+            setShowSoldAnimation(true);
+            setTimeout(() => setShowSoldAnimation(false), 3000);
+          } else if (playerStatus === 'unsold') {
+            setShowUnsoldAnimation(true);
+            setTimeout(() => setShowUnsoldAnimation(false), 3000);
+          }
+        }
+        setLastCompletedRoundId(latestHistory.id);
       }
     } catch (error) {
       console.error("Error fetching team data:", error);
@@ -129,6 +149,33 @@ const TeamDashboard = () => {
   const boughtPlayers = players.filter(p => !p.is_retained);
   const totalSpent = players.reduce((sum, p) => sum + Number(p.price), 0);
   const overseasCount = players.filter(p => p.is_overseas).length;
+
+  // Animation Overlays
+  if (showSoldAnimation && liveRoundAnimationData) {
+    return (
+      <div className="fixed inset-0 z-50 bg-green-900/90 flex items-center justify-center animate-in fade-in duration-300">
+        <div className="text-center space-y-6 animate-scale-in">
+          <div className="flex justify-center"><TrophyAnimation size={200} /></div>
+          <h1 className="text-7xl md:text-9xl font-display font-black text-white animate-pulse drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">SOLD!</h1>
+          <p className="text-3xl md:text-4xl text-green-200 font-bold uppercase tracking-widest">
+            To {liveRoundAnimationData?.teams?.name || "The Franchise"}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showUnsoldAnimation) {
+    return (
+      <div className="fixed inset-0 z-50 bg-red-900/90 flex items-center justify-center animate-in fade-in duration-300">
+        <div className="text-center space-y-6 animate-scale-in">
+          <div className="flex justify-center"><BatSwingAnimation size={200} /></div>
+          <h1 className="text-7xl md:text-9xl font-display font-black text-white animate-pulse drop-shadow-[0_0_50px_rgba(255,255,255,0.5)]">UNSOLD</h1>
+          <p className="text-3xl md:text-4xl text-red-200 font-bold uppercase tracking-widest">Better Luck Next Time</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
