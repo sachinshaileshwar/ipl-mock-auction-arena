@@ -27,6 +27,11 @@ const StatTile = ({ icon: Icon, label, value, subtext, colorClass }: any) => (
 );
 
 const PublicAuctionView = () => {
+  const [liveRound, setLiveRound] = useState<any>(null);
+  const [currentPlayer, setCurrentPlayer] = useState<any>(null);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [stats, setStats] = useState({ totalSpent: 0, highestBid: 0, soldCount: 0 });
+  const [loading, setLoading] = useState(true);
   const [showSoldAnimation, setShowSoldAnimation] = useState(false);
   const [showUnsoldAnimation, setShowUnsoldAnimation] = useState(false);
   const [lastCompletedRoundId, setLastCompletedRoundId] = useState<string | null>(null);
