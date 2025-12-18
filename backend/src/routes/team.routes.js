@@ -286,7 +286,7 @@ router.post('/:id/logo', authenticate, authorizeAdmin, [
     const fileName = `${id}.${fileExt}`;
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
       .from('team-logos')
       .upload(fileName, imageBuffer, {
         contentType,
@@ -313,7 +313,7 @@ router.post('/:id/logo', authenticate, authorizeAdmin, [
     res.json({ message: 'Logo uploaded successfully', team });
   } catch (error) {
     console.error('Upload logo error:', error);
-    res.status(500).json({ error: 'Failed to upload logo' });
+    res.status(500).json({ error: error.message || 'Failed to upload logo', details: error });
   }
 });
 
