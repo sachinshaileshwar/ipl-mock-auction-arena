@@ -107,7 +107,7 @@ const PublicAuctionView = () => {
           </div>
         </div>
         <div className="flex gap-4">
-          <Badge variant="outline" className="bg-white/5 border-white/10 px-4 py-2 text-xs tracking-widest backdrop-blur-md">
+          <Badge variant="outline" className="bg-white/5 border-white/10 px-4 py-2 text-xs tracking-widest backdrop-blur-sm">
             LIVE PROJECTOR VIEW
           </Badge>
         </div>

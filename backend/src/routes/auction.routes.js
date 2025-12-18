@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticate, authorizeAdmin } = require('../middleware/auth.middleware');
 
 /**
@@ -169,6 +169,10 @@ router.get('/stats', async (req, res) => {
  * POST /api/auction/start
  * Start auction for a player (admin only)
  */
+/**
+ * POST /api/auction/start
+ * Start auction for a player (admin only)
+ */
 router.post('/start', authenticate, authorizeAdmin, [
   body('player_id').notEmpty().withMessage('Player ID is required')
 ], async (req, res) => {
@@ -181,7 +185,7 @@ router.post('/start', authenticate, authorizeAdmin, [
     const { player_id } = req.body;
 
     // Check if there's already a live auction
-    const { data: existingRound } = await supabase
+    const { data: existingRound } = await supabaseAdmin
       .from('auction_rounds')
       .select('id')
       .eq('status', 'live')
@@ -192,7 +196,7 @@ router.post('/start', authenticate, authorizeAdmin, [
     }
 
     // Get player details
-    const { data: player, error: playerError } = await supabase
+    const { data: player, error: playerError } = await supabaseAdmin
       .from('players')
       .select('*')
       .eq('id', player_id)
@@ -203,7 +207,7 @@ router.post('/start', authenticate, authorizeAdmin, [
     }
 
     // Create auction round
-    const { data: round, error } = await supabase
+    const { data: round, error } = await supabaseAdmin
       .from('auction_rounds')
       .insert({
         player_id,
@@ -219,7 +223,7 @@ router.post('/start', authenticate, authorizeAdmin, [
     if (error) throw error;
 
     // Update player status
-    await supabase
+    await supabaseAdmin
       .from('players')
       .update({ status: 'in_auction' })
       .eq('id', player_id);
@@ -249,7 +253,7 @@ router.post('/bid', authenticate, authorizeAdmin, [
     const { round_id, team_id, amount } = req.body;
 
     // Verify team has enough purse
-    const { data: team, error: teamError } = await supabase
+    const { data: team, error: teamError } = await supabaseAdmin
       .from('teams')
       .select('purse_remaining, name')
       .eq('id', team_id)
@@ -266,7 +270,7 @@ router.post('/bid', authenticate, authorizeAdmin, [
     }
 
     // Update auction round
-    const { data: round, error } = await supabase
+    const { data: round, error } = await supabaseAdmin
       .from('auction_rounds')
       .update({
         current_bid: amount,
@@ -306,7 +310,7 @@ router.post('/update-bid', authenticate, authorizeAdmin, [
 
     const { round_id, amount } = req.body;
 
-    const { data: round, error } = await supabase
+    const { data: round, error } = await supabaseAdmin
       .from('auction_rounds')
       .update({ current_bid: amount })
       .eq('id', round_id)
@@ -343,7 +347,7 @@ router.post('/sell', authenticate, authorizeAdmin, [
     const { round_id } = req.body;
 
     // Get current round
-    const { data: round, error: roundError } = await supabase
+    const { data: round, error: roundError } = await supabaseAdmin
       .from('auction_rounds')
       .select('*')
       .eq('id', round_id)
@@ -358,13 +362,13 @@ router.post('/sell', authenticate, authorizeAdmin, [
     }
 
     // Update auction round status
-    await supabase
+    await supabaseAdmin
       .from('auction_rounds')
       .update({ status: 'completed' })
       .eq('id', round_id);
 
     // Update player as sold
-    await supabase
+    await supabaseAdmin
       .from('players')
       .update({
         status: 'sold',
@@ -374,7 +378,7 @@ router.post('/sell', authenticate, authorizeAdmin, [
       .eq('id', round.player_id);
 
     // Add player to team
-    await supabase
+    await supabaseAdmin
       .from('team_players')
       .insert({
         team_id: round.current_bid_team_id,
@@ -384,13 +388,13 @@ router.post('/sell', authenticate, authorizeAdmin, [
       });
 
     // Deduct from team purse
-    const { data: team } = await supabase
+    const { data: team } = await supabaseAdmin
       .from('teams')
       .select('purse_remaining')
       .eq('id', round.current_bid_team_id)
       .single();
 
-    await supabase
+    await supabaseAdmin
       .from('teams')
       .update({ purse_remaining: team.purse_remaining - round.current_bid })
       .eq('id', round.current_bid_team_id);
@@ -418,7 +422,7 @@ router.post('/unsold', authenticate, authorizeAdmin, [
     const { round_id } = req.body;
 
     // Get current round
-    const { data: round, error: roundError } = await supabase
+    const { data: round, error: roundError } = await supabaseAdmin
       .from('auction_rounds')
       .select('*')
       .eq('id', round_id)
@@ -429,13 +433,13 @@ router.post('/unsold', authenticate, authorizeAdmin, [
     }
 
     // Update auction round status
-    await supabase
+    await supabaseAdmin
       .from('auction_rounds')
       .update({ status: 'completed' })
       .eq('id', round_id);
 
     // Update player as unsold
-    await supabase
+    await supabaseAdmin
       .from('players')
       .update({ status: 'unsold' })
       .eq('id', round.player_id);
@@ -454,19 +458,19 @@ router.post('/unsold', authenticate, authorizeAdmin, [
 router.post('/reset', authenticate, authorizeAdmin, async (req, res) => {
   try {
     // Delete all auction rounds
-    await supabase
+    await supabaseAdmin
       .from('auction_rounds')
       .delete()
       .neq('id', '00000000-0000-0000-0000-000000000000');
 
     // Delete all team_players (except retained)
-    await supabase
+    await supabaseAdmin
       .from('team_players')
       .delete()
       .eq('is_retained', false);
 
     // Reset all players to not_started (except retained)
-    await supabase
+    await supabaseAdmin
       .from('players')
       .update({
         status: 'not_started',
@@ -476,13 +480,13 @@ router.post('/reset', authenticate, authorizeAdmin, async (req, res) => {
       .neq('status', 'sold');
 
     // Reset team purses
-    const { data: teams } = await supabase
+    const { data: teams } = await supabaseAdmin
       .from('teams')
       .select('id, purse_start');
 
     for (const team of teams || []) {
       // Calculate retained player costs
-      const { data: retained } = await supabase
+      const { data: retained } = await supabaseAdmin
         .from('team_players')
         .select('price')
         .eq('team_id', team.id)
@@ -490,7 +494,7 @@ router.post('/reset', authenticate, authorizeAdmin, async (req, res) => {
 
       const retainedCost = (retained || []).reduce((sum, p) => sum + parseFloat(p.price), 0);
 
-      await supabase
+      await supabaseAdmin
         .from('teams')
         .update({ purse_remaining: team.purse_start - retainedCost })
         .eq('id', team.id);

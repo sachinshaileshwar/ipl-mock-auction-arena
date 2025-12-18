@@ -261,7 +261,7 @@ router.delete('/:id', authenticate, authorizeAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('players')
       .delete()
       .eq('id', id);
