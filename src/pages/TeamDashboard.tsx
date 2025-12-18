@@ -48,6 +48,10 @@ interface Player {
 
 const TeamDashboard = () => {
   const { profile, signOut, loading } = useAuth();
+  const [team, setTeam] = useState<Team | null>(null);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [availablePlayers, setAvailablePlayers] = useState<AvailablePlayer[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
   /* Animation States */
   const [showSoldAnimation, setShowSoldAnimation] = useState(false);
   const [showUnsoldAnimation, setShowUnsoldAnimation] = useState(false);
