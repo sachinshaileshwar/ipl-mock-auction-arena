@@ -1,4 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,16 @@ const AdminDashboard = () => {
       </div>
     );
   }
+
+  /* Persist active tab */
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem("admin_active_tab") || "auction";
+  });
+
+  const handleTabChange = (val: string) => {
+    setActiveTab(val);
+    localStorage.setItem("admin_active_tab", val);
+  };
 
   if (!profile || profile.role !== "admin") {
     return <Navigate to="/login" replace />;
@@ -71,7 +82,7 @@ const AdminDashboard = () => {
           <StadiumAnimation size={300} />
         </div>
 
-        <Tabs defaultValue="auction" className="space-y-6 relative z-10">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6 relative z-10">
 
           {/* Glass Tabs List */}
           <div className="flex justify-center mb-8">
