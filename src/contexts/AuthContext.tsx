@@ -13,6 +13,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const checkUser = async () => {
     const token = localStorage.getItem("auth_token");
+    const cachedProfile = localStorage.getItem("auth_profile");
+
+    // Load from cache instantly to prevent flickering/logout
+    if (token && cachedProfile) {
+      try {
+        setUser(JSON.parse(cachedProfile));
+      } catch (e) {
+        console.error("Failed to parse cached profile", e);
+      }
+    }
+
     if (!token) {
       setLoading(false);
       return;
@@ -22,13 +33,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const res = await api.get("/api/auth/me");
       // We want the PROFILE because it has the 'role', which the app needs for routing.
       // The backend returns { user, profile }.
-      setUser(res.data.profile);
+      const profile = res.data.profile;
+      setUser(profile);
+      localStorage.setItem("auth_profile", JSON.stringify(profile));
     } catch (err: any) {
       console.error("Session check failed", err);
       // Only logout if it's an auth error (401/403)
-      // For network errors or 500s, keep the token to retry later
       if (err.response?.status === 401 || err.response?.status === 403) {
         localStorage.removeItem("auth_token");
+        localStorage.removeItem("auth_profile");
         setUser(null);
       }
     } finally {
@@ -47,7 +60,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (token) {
         localStorage.setItem("auth_token", token);
         // Important: Set the PROFILE, not just the raw auth user
-        setUser(res.data.profile || res.data.user);
+        const profile = res.data.profile || res.data.user;
+        setUser(profile);
+        localStorage.setItem("auth_profile", JSON.stringify(profile));
       }
       return { error: null };
     } catch (err: any) {
@@ -75,6 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.error("Logout error", err);
     } finally {
       localStorage.removeItem("auth_token");
+      localStorage.removeItem("auth_profile");
       setUser(null);
     }
   };

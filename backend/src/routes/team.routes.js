@@ -216,7 +216,7 @@ router.post('/:id/retain', authenticate, authorizeAdmin, [
     const { player_id, price } = req.body;
 
     // Add to team_players
-    const { data: teamPlayer, error: insertError } = await supabase
+    const { data: teamPlayer, error: insertError } = await supabaseAdmin
       .from('team_players')
       .insert({
         team_id,
@@ -230,7 +230,7 @@ router.post('/:id/retain', authenticate, authorizeAdmin, [
     if (insertError) throw insertError;
 
     // Update player status
-    await supabase
+    await supabaseAdmin
       .from('players')
       .update({
         status: 'retained',
@@ -240,13 +240,13 @@ router.post('/:id/retain', authenticate, authorizeAdmin, [
       .eq('id', player_id);
 
     // Update team purse
-    const { data: team } = await supabase
+    const { data: team } = await supabaseAdmin
       .from('teams')
       .select('purse_remaining')
       .eq('id', team_id)
       .single();
 
-    await supabase
+    await supabaseAdmin
       .from('teams')
       .update({ purse_remaining: team.purse_remaining - price })
       .eq('id', team_id);
@@ -301,7 +301,7 @@ router.post('/:id/logo', authenticate, authorizeAdmin, [
       .getPublicUrl(fileName);
 
     // Update team logo_url
-    const { data: team, error: updateError } = await supabase
+    const { data: team, error: updateError } = await supabaseAdmin
       .from('teams')
       .update({ logo_url: publicUrl })
       .eq('id', id)
@@ -334,7 +334,7 @@ router.post('/release', authenticate, authorizeAdmin, [
     const { team_id, player_id } = req.body;
 
     // Get the transaction to refund
-    const { data: transaction, error: txError } = await supabase
+    const { data: transaction, error: txError } = await supabaseAdmin
       .from('team_players')
       .select('price')
       .eq('team_id', team_id)
@@ -346,7 +346,7 @@ router.post('/release', authenticate, authorizeAdmin, [
     const refundAmount = transaction.price;
 
     // Delete team_player entry
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await supabaseAdmin
       .from('team_players')
       .delete()
       .eq('team_id', team_id)
@@ -355,7 +355,7 @@ router.post('/release', authenticate, authorizeAdmin, [
     if (deleteError) throw deleteError;
 
     // Refund team purse
-    const { data: team, error: teamError } = await supabase
+    const { data: team, error: teamError } = await supabaseAdmin
       .from('teams')
       .select('purse_remaining')
       .eq('id', team_id)
@@ -363,13 +363,13 @@ router.post('/release', authenticate, authorizeAdmin, [
 
     if (teamError) throw teamError;
 
-    await supabase
+    await supabaseAdmin
       .from('teams')
       .update({ purse_remaining: team.purse_remaining + refundAmount })
       .eq('id', team_id);
 
     // Reset player status
-    await supabase
+    await supabaseAdmin
       .from('players')
       .update({
         status: 'not_started',
